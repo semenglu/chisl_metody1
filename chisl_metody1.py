@@ -15,25 +15,37 @@
 
 import numpy as np
 
+#Данная функция меняет местами две строки матрицы A и соответствующие элементы вектор столбца b
+def swap_rows(A, b, i, j):
+    tmp = A[i].copy()
+    A[i] = A[j].copy()
+    A[j] = tmp
+    b[i], b[j] = b[j], b[i]
+
+
+def swap_col(A, x_order, i, j):
+    for row in range(len(A)):
+        A[row][i], A[row][j] = A[row][j], A[row][i]
+    x_order[i], x_order[j] = x_order[j], x_order[i]
+
 
 def gauss_elimination(A, b):
     n = len(A)
-
+    x_order = [i for i in range(n)]
     for i in range(n):
         # Находим максимальный элемент во всей матрице, начиная с (i, i)-го элемента
         max_el = abs(A[i][i])
         max_row = i
+        max_col = i
         for j in range(i, n):
             for k in range(i, n):
                 if abs(A[j][k]) > max_el:
                     max_el = abs(A[j][k])
                     max_row = j
-                    i = k
-
-        # Меняем строки местами, чтобы максимальный элемент был на диагонали
-        A[i], A[max_row] = A[max_row], A[i]
-        b[i], b[max_row] = b[max_row], b[i]
-
+                    max_col = k
+        # Меняем строки и столбцы местами, чтобы максимальный элемент был на диагонали
+        swap_rows(A, b, i, max_row)
+        swap_col(A, x_order, i, max_col)
         # Приводим все элементы под диагональю к нулю
         for j in range(i + 1, n):
             c = -A[j][i] / A[i][i]
@@ -50,7 +62,8 @@ def gauss_elimination(A, b):
             b[j] -= A[j][i] * x[i]
             A[j][i] = 0
 
-    return x
+    return [x[i] for i in x_order]
+
 
 # Считываем данные из файла
 data = np.loadtxt("input.txt")
@@ -63,5 +76,10 @@ b = data[:, -1]
 x = gauss_elimination(A, b)
 
 # Выводим решение
-print("Solution:")
-print(x)
+print("Ответ:")
+f = open("file8.txt", "x")
+
+for index, _x in enumerate(x):
+    print(f"x{index + 1} = " + "{:.2f}".format(_x) + "  ")
+    f.writelines(f"x{index + 1} = " + "{:.2f}".format(_x))
+    f.writelines("\n")
